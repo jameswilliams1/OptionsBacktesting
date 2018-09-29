@@ -1,15 +1,14 @@
-import java.text.Format;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.IllegalFormatException;
+import java.util.Locale;
 import java.util.Scanner;
 
 /*
- * Represents a call order from the market
+ * Represents a call/put order from the market
  */
-public class CallOrder {
+public class Order {
 
     //<editor-fold desc="variables">
     private final LocalDate date;
@@ -18,7 +17,7 @@ public class CallOrder {
     private final double close;
     private final double underlying;
     private final LocalDate expiry;
-    private final double callIV;
+    private final double IV;
     private final double delta;
     private final double gamma;
     private final double vega;
@@ -27,14 +26,14 @@ public class CallOrder {
     //</editor-fold>
 
     //<editor-fold desc="constructor">
-    public CallOrder(LocalDate date, LocalTime time, int strike, double close, double underlying, LocalDate expiry, double callIV, double delta, double gamma, double vega, double theta, double rho) {
+    public Order(LocalDate date, LocalTime time, int strike, double close, double underlying, LocalDate expiry, double IV, double delta, double gamma, double vega, double theta, double rho) {
         this.date = date;
         this.time = time;
         this.strike = strike;
         this.close = close;
         this.underlying = underlying;
         this.expiry = expiry;
-        this.callIV = callIV;
+        this.IV = IV;
         this.delta = delta;
         this.gamma = gamma;
         this.vega = vega;
@@ -68,8 +67,8 @@ public class CallOrder {
         return expiry;
     }
 
-    public double getCallIV() {
-        return callIV;
+    public double getIV() {
+        return IV;
     }
 
     public double getDelta() {
@@ -93,17 +92,37 @@ public class CallOrder {
     }
     //</editor-fold>
 
+    //<editor-fold desc="toString">
+    @Override
+    public String toString() {
+        return "Order{" +
+                "date=" + date +
+                ", time=" + time +
+                ", strike=" + strike +
+                ", close=" + close +
+                ", underlying=" + underlying +
+                ", expiry=" + expiry +
+                ", IV=" + IV +
+                ", delta=" + delta +
+                ", gamma=" + gamma +
+                ", vega=" + vega +
+                ", theta=" + theta +
+                ", rho=" + rho +
+                '}';
+    }
+    //</editor-fold>
+
     // Parses input string line
-    public static CallOrder parseLine(String line) throws IllegalFormatException {
+    public static Order parseLine(String line, String orderType) {
         Scanner s = new Scanner(line);
-        s.useDelimiter(",");
+        s.useDelimiter(",|%,"); //Use , delimiter and ignore % sign on IV
         String dateString = "";
         String timeString = "";
         int strike = 0;
         double close = 0;
         double underlying = 0;
         String expiryString = "";
-        double callIV = 0;
+        double IV = 0;
         double delta = 0;
         double gamma = 0;
         double vega = 0;
@@ -116,34 +135,46 @@ public class CallOrder {
             timeString = s.next();
             strike = s.nextInt();
             close = s.nextDouble();
-            underlying = s.nextDouble();
-            expiryString = s.next();
-            callIV = s.nextDouble();
+            if (orderType.equals("call")){ //Call/put different column position
+                underlying = s.nextDouble();
+                expiryString = s.next();
+            }
+            if (orderType.equals("put")){
+                expiryString = s.next();
+                underlying = s.nextDouble();
+            }
+            IV = s.nextDouble();
             delta = s.nextDouble();
             gamma = s.nextDouble();
             vega = s.nextDouble();
             theta = s.nextDouble();
             rho = s.nextDouble();
         }
+        if (orderType.equals("call")){
+            IV = IV/100; //Ensures both call/put IV are decimal
+        }
         s.close();
         LocalDate date;
-        LocalTime time;
+        LocalTime time = LocalTime.of(0, 0, 0); //Initialise to 0
         LocalDate expiry;
-        try{
+        try {
             date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("M-dd-yyyy"));
-        }
-        catch (DateTimeParseException e){ //Date in other format
+        } catch (DateTimeParseException e) { //Date in other format
             date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("M/dd/yyyy"));
         }
-        time = LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm:ss"));
-        try{
-            expiry = LocalDate.parse(expiryString, DateTimeFormatter.ofPattern("M/dd/yyyy"));
+        if (orderType.equals("call")){
+            time = LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm:ss"));
         }
-        catch (DateTimeParseException e) { //Date in other format
+        if (orderType.equals("put")){
+            time = LocalTime.parse(timeString, DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH));
+        }
+        try {
+            expiry = LocalDate.parse(expiryString, DateTimeFormatter.ofPattern("M/dd/yyyy"));
+        } catch (DateTimeParseException e) { //Date in other format
             expiry = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("M-dd-yyyy"));
         }
-        // Creates CallOrder from stored values
-        return new CallOrder(date, time, strike, close, underlying, expiry, callIV, delta, gamma, vega, theta, rho);
+        // Creates Order from stored values in standard format
+        return new Order(date, time, strike, close, underlying, expiry, IV, delta, gamma, vega, theta, rho);
     }
 
 
