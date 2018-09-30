@@ -11,9 +11,8 @@ public class TradeMain {
         ArrayList<Order> calls = new ArrayList<>();
         ArrayList<Order> puts = new ArrayList<>();
         ArrayList<Order> orders = new ArrayList<>();
-        ArrayList<Trade> buyList = new ArrayList<>();
-        ArrayList<Trade> sellList = new ArrayList<>();
         ArrayList<Trade> tradeList = new ArrayList<>();
+        ArrayList<Trade> activeTrades = new ArrayList<>();
 
 
         try {
@@ -29,7 +28,7 @@ public class TradeMain {
         orders.addAll(calls);
         orders.addAll(puts);
         Collections.sort(orders);
-        Analysis.getChanges(orders, tradeList);
+        Analysis.getChanges(orders, tradeList, activeTrades);
 
         for (int i = 0; i < tradeList.size(); i++) {
             System.out.println(tradeList.get(i));

@@ -73,7 +73,7 @@ public class Analysis {
      *
      * @param orders
      */
-    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList) {
+    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList, ArrayList<Trade> activeTrades) {
         double ref = orders.get(0).getUnderlying(); //Initially use first underlying value present as comparison reference
         double decreaseRef = ref;
         double increaseRef = ref;
@@ -94,14 +94,23 @@ public class Analysis {
         double putClose = 0;
         LocalDateTime expiry = expiryDateTime(orders.get(0).getExpiry()); //Initial expiry/ref change date
         LocalDateTime change = getUnderlyingChangeDate(expiry);
-
-
+        boolean ordersAllowed = false;
+        LocalTime startTime = LocalTime.of(9, 20, 0);
+        LocalTime endTime = LocalTime.of(15, 20, 0);
 
         for (int i = 0; i < orders.size(); i++) {
             String orderType = orders.get(i).getType();
             // Get underlying and date of this order
             double underlying = orders.get(i).getUnderlying();
             LocalDateTime orderDateTime = orders.get(i).getDateTime();
+            if ( orderDateTime.isAfter(startTime.atDate(orderDateTime.toLocalDate())) && orderDateTime.isBefore(endTime.atDate(orderDateTime.toLocalDate()))){
+                ordersAllowed = true;
+            }
+            else{
+                ordersAllowed = false;
+            }
+
+
             if(orderType.equals("put")){
                 putIV = orders.get(i).getIV();
                 putDelta = orders.get(i).getDelta();
@@ -122,6 +131,50 @@ public class Analysis {
             }
 
 
+            if(activeTrades.size()!=0 && ordersAllowed){
+                for(int j=0;j<activeTrades.size();j++){
+
+                    //Exit criteria of trades made after underlying decrease
+                    if(!activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying()<=underlying){
+                        Trade thisTrade = activeTrades.get(j);
+                        String oppSide = "";
+                        if(thisTrade.getSide().equals("buy")){
+                            oppSide = "sell";
+                        }
+                        else{
+                            oppSide = "buy";
+                        }
+                        if (thisTrade.getType().equals("put")) {
+                            tradeList.add(new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), orderDateTime, thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+                        } else {
+                            tradeList.add(new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), orderDateTime, thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
+                        }
+                        activeTrades.remove(j);
+                        j = j-1; //Account for removing an element
+                    }
+                    //Exit criteria of trades made after underlying increase
+                    else if(activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying()>=underlying){
+                        Trade thisTrade = activeTrades.get(j);
+                        String oppSide = "";
+                        if(thisTrade.getSide().equals("buy")){
+                            oppSide = "sell";
+                        }
+                        else{
+                            oppSide = "buy";
+                        }
+                        if (thisTrade.getType().equals("put")) {
+                            tradeList.add(new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), orderDateTime, thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+                        } else {
+                            tradeList.add(new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), orderDateTime, thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
+                        }
+                        activeTrades.remove(j);
+                        j = j-1; //Account for removing an element
+                    }
+
+
+
+                }
+            }
 
 
 
@@ -139,14 +192,14 @@ public class Analysis {
             double increaseDifference = underlying - increaseRef;
 
 
-            if (decreaseDifference <= -minChange) {
+            if (decreaseDifference <= -minChange && ordersAllowed) {
                 increaseRef = ref; //Reset increaseRef when price passes ref
-                Trade.buyDecreaseTrade(tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
+                Trade.buyDecreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 decreaseRef = underlying;
             }
-            if (increaseDifference >= minChange) {
+            if (increaseDifference >= minChange && ordersAllowed) {
                 decreaseRef = ref; //Reset decreaseRef when price passes ref
-                Trade.buyIncreaseTrade(tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
+                Trade.buyIncreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 increaseRef = underlying;
             }
 
