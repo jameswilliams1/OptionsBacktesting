@@ -1,47 +1,35 @@
 import java.io.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class TradeMain {
-    // Returns list of orders from input file
-    public static ArrayList<Order> ordersFromFile(String filename, String orderType)
-            throws IOException {
-        ArrayList<Order> data = new ArrayList<Order>();
-        FileReader fr = new FileReader(filename);
-        BufferedReader br = new BufferedReader(fr);
-        String line = "";
-        while ((line = br.readLine()) != null) {
-            try {
-                Order order = Order.parseLine(line, orderType);
-                data.add(order);
-            }
-            catch (Exception e){
-                System.out.println(e);
-                System.out.println(line);
-            }
-        }
-        br.close();
-        return data;
-    }
+
 
     public static void main(String[] args) {
         ArrayList<Order> calls = new ArrayList<>();
         ArrayList<Order> puts = new ArrayList<>();
+        ArrayList<Order> orders = new ArrayList<>();
+        ArrayList<Trade> buyList = new ArrayList<>();
+        ArrayList<Trade> sellList = new ArrayList<>();
 
-        try{
-            puts = ordersFromFile("C:\\Users\\User\\Downloads\\Options Data\\Put_Data_CSV.csv", "put");
-        }
-        catch (IOException e){ //Ignore lines that don't parse correctly
+
+        try {
+            calls = Analysis.ordersFromFile("C:\\Users\\User\\Downloads\\Options Data\\Call Data_CSV.csv", "call");
+        } catch (IOException e) { //Catch file not found errors
             System.out.println(e);
         }
+        try {
+            puts = Analysis.ordersFromFile("C:\\Users\\User\\Downloads\\Options Data\\Put_Data_CSV.csv", "put");
+        } catch (IOException e) {
+            System.out.println(e);
+        }
+        orders.addAll(calls);
+        orders.addAll(puts);
+        orders.sort();
 
-
-
-   
-
-
-
+        System.out.println(calls);
+        System.out.println(puts);
     }
-
 }
 
 

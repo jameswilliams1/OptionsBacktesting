@@ -1,4 +1,5 @@
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -135,11 +136,11 @@ public class Order {
             timeString = s.next();
             strike = s.nextInt();
             close = s.nextDouble();
-            if (orderType.equals("call")){ //Call/put different column position
+            if (orderType.equals("call")) { //Call/put different column position
                 underlying = s.nextDouble();
                 expiryString = s.next();
             }
-            if (orderType.equals("put")){
+            if (orderType.equals("put")) {
                 expiryString = s.next();
                 underlying = s.nextDouble();
             }
@@ -150,8 +151,8 @@ public class Order {
             theta = s.nextDouble();
             rho = s.nextDouble();
         }
-        if (orderType.equals("call")){
-            IV = IV/100; //Ensures both call/put IV are decimal
+        if (orderType.equals("call")) {
+            IV = IV / 100; //Ensures both call/put IV are decimal
         }
         s.close();
         LocalDate date;
@@ -162,10 +163,10 @@ public class Order {
         } catch (DateTimeParseException e) { //Date in other format
             date = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("M/dd/yyyy"));
         }
-        if (orderType.equals("call")){
+        if (orderType.equals("call")) {
             time = LocalTime.parse(timeString, DateTimeFormatter.ofPattern("HH:mm:ss"));
         }
-        if (orderType.equals("put")){
+        if (orderType.equals("put")) {
             time = LocalTime.parse(timeString, DateTimeFormatter.ofPattern("h:mm:ss a", Locale.ENGLISH));
         }
         try {
