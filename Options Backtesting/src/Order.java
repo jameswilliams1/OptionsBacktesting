@@ -9,7 +9,7 @@ import java.util.Scanner;
 /*
  * Represents a call/put order from the market
  */
-public class Order implements Comparable<Order>{
+public class Order implements Comparable<Order> {
 
     //<editor-fold desc="variables">
     private final LocalDateTime dateTime;
@@ -93,7 +93,7 @@ public class Order implements Comparable<Order>{
     //<editor-fold desc="toString">
     @Override
     public String toString() {
-        return type+"{" +
+        return type + "{" +
                 "date=" + dateTime +
                 ", strike=" + strike +
                 ", close=" + close +

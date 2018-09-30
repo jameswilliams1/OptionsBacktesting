@@ -28,7 +28,12 @@ public class TradeMain {
         orders.addAll(calls);
         orders.addAll(puts);
         Collections.sort(orders);
-        System.out.println(orders);
+        Analysis.getChanges(orders, buyList, sellList);
+
+        for (int i = 0; i < buyList.size(); i++) {
+            System.out.println(buyList.get(i));
+        }
+
     }
 }
 

@@ -23,7 +23,7 @@ public class Trade {
     //</editor-fold>
 
     //<editor-fold desc="constructor">
-    public Trade(String type, int quantity, LocalDateTime dateTime, int strike, double previousUnderlying, LocalDateTime expiry){//, double delta, double gamma, double vega, double theta) {
+    public Trade(String type, int quantity, LocalDateTime dateTime, int strike, double previousUnderlying, LocalDateTime expiry) {//, double delta, double gamma, double vega, double theta) {
         this.type = type;
         this.quantity = quantity;
         this.active = true; //Open trade
@@ -39,25 +39,49 @@ public class Trade {
     //</editor-fold>
 
 
-
     //<editor-fold desc="round">
-    public static int roundUnderlying(double number){ //Round to nearest 100 (round down for 11450 etc.)
-        return new BigDecimal(number/100).setScale(0, RoundingMode.HALF_DOWN).intValue()*100;
+    public static int roundUnderlying(double number) { //Round to nearest 100 (round down for 11450 etc.)
+        return new BigDecimal(number / 100).setScale(0, RoundingMode.HALF_DOWN).intValue() * 100;
     }
     //</editor-fold>
 
+    //<editor-fold desc="trades">
     //Buy orders to make when price drops by 0.5%
-    public static void buyDecreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double previousUnderlying){
+    public static void buyDecreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry) {
+        double previousUnderlying = underlying * 1.005;
         int roundedUnderlying = roundUnderlying(previousUnderlying);
-        LocalDateTime expiry = Analysis.getExpiry(dateTime);
-        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying-300, previousUnderlying, expiry));
-        sellList.add(new Trade("put", 1000, dateTime, roundedUnderlying-200, previousUnderlying, expiry));
-        buyList.add(new Trade("call", 1000, dateTime, roundedUnderlying+100, previousUnderlying, expiry));
-        sellList.add(new Trade("call", 1200, dateTime, roundedUnderlying+200, previousUnderlying, expiry));
-
-
-
+        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 300, previousUnderlying, expiry));
+        sellList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry));
+        buyList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry));
+        sellList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry));
     }
 
+    //Buy orders to make when price increases by 0.5%
+    public static void buyIncreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry) {
+        double previousUnderlying = underlying * 0.995;
+        int roundedUnderlying = roundUnderlying(previousUnderlying);
+        sellList.add(new Trade("put", 1200, dateTime, roundedUnderlying - 300, previousUnderlying, expiry));
+        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry));
+        sellList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry));
+        buyList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry));
+    }
+    //</editor-fold>
 
+
+    @Override
+    public String toString() {
+        return "Trade{" +
+                "type='" + type + '\'' +
+                ", quantity=" + quantity +
+                ", active=" + active +
+                ", dateTime=" + dateTime +
+                ", strike=" + strike +
+                ", previousUnderlying=" + previousUnderlying +
+                ", expiry=" + expiry +
+                ", delta=" + delta +
+                ", gamma=" + gamma +
+                ", vega=" + vega +
+                ", theta=" + theta +
+                '}';
+    }
 }
