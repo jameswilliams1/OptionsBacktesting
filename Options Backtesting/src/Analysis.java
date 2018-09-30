@@ -67,9 +67,7 @@ public class Analysis {
     }
     //</editor-fold>
 
-    public double percentChange(double value, double previousValue) {
-        return (value / previousValue) * 100;
-    }
+
 
 
     /**
@@ -84,16 +82,48 @@ public class Analysis {
         double decreaseRef = ref;
         double increaseRef = ref;
         double minChange = ref * 0.005;
+        double callIV = 0;
+        double callDelta = 0;
+        double callGamma = 0;
+        double callVega = 0;
+        double callTheta = 0;
+        double callRho = 0;
+        double callClose = 0;
+        double putIV = 0;
+        double putDelta = 0;
+        double putGamma = 0;
+        double putVega = 0;
+        double putTheta = 0;
+        double putRho = 0;
+        double putClose = 0;
 
         LocalDateTime expiry = expiryDateTime(orders.get(0).getExpiry()); //Initial expiry/ref change date
         LocalDateTime change = getUnderlyingChangeDate(expiry);
 
         for (int i = 0; i < orders.size(); i++) {
+            String orderType = orders.get(i).getType();
             // Get underlying and date of this order
             double underlying = orders.get(i).getUnderlying();
             LocalDateTime orderDateTime = orders.get(i).getDateTime();
-
-            // Update all variables if an order is after change date
+            if(orderType.equals("put")){
+                putIV = orders.get(i).getIV();
+                putDelta = orders.get(i).getDelta();
+                putGamma = orders.get(i).getGamma();
+                putVega = orders.get(i).getVega();
+                putTheta = orders.get(i).getTheta();
+                putRho = orders.get(i).getRho();
+                putClose = orders.get(i).getClose();
+            }
+            if(orderType.equals("call")){
+                callIV = orders.get(i).getIV();
+                callDelta = orders.get(i).getDelta();
+                callGamma = orders.get(i).getGamma();
+                callVega = orders.get(i).getVega();
+                callTheta = orders.get(i).getTheta();
+                putRho = orders.get(i).getRho();
+                callClose = orders.get(i).getClose();
+            }
+            // Update variables if an order is after change date
             if (orderDateTime.isEqual(change) || orderDateTime.isAfter(change)) {
                 ref = orders.get(i).getUnderlying();
                 decreaseRef = ref;
@@ -109,12 +139,12 @@ public class Analysis {
 
             if (decreaseDifference <= -minChange) {
                 increaseRef = ref; //Reset increaseRef when price passes ref
-                Trade.buyDecreaseTrade(buyList, sellList, orderDateTime, underlying, expiry);
+                Trade.buyDecreaseTrade(buyList, sellList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 decreaseRef = underlying;
             }
             if (increaseDifference >= minChange) {
                 decreaseRef = ref; //Reset decreaseRef when price passes ref
-                Trade.buyIncreaseTrade(buyList, sellList, orderDateTime, underlying, expiry);
+                Trade.buyIncreaseTrade(buyList, sellList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 increaseRef = underlying;
             }
 

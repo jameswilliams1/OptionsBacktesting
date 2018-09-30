@@ -44,10 +44,10 @@ public class Order implements Comparable<Order> {
     //</editor-fold>
 
     //<editor-fold desc="getters">
+
     public LocalDateTime getDateTime() {
         return dateTime;
     }
-
 
     public int getStrike() {
         return strike;
@@ -88,6 +88,11 @@ public class Order implements Comparable<Order> {
     public double getRho() {
         return rho;
     }
+
+    public String getType() {
+        return type;
+    }
+
     //</editor-fold>
 
     //<editor-fold desc="toString">

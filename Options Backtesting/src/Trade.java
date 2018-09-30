@@ -16,14 +16,17 @@ public class Trade {
     private final int strike;
     private final double previousUnderlying;
     private final LocalDateTime expiry;
+    private final double IV;
     private final double delta;
     private final double gamma;
     private final double vega;
     private final double theta;
+    private final double rho;
+    private final double close;
     //</editor-fold>
 
     //<editor-fold desc="constructor">
-    public Trade(String type, int quantity, LocalDateTime dateTime, int strike, double previousUnderlying, LocalDateTime expiry) {//, double delta, double gamma, double vega, double theta) {
+    public Trade(String type, int quantity, LocalDateTime dateTime, int strike, double previousUnderlying, LocalDateTime expiry, double IV, double delta, double gamma, double vega, double theta, double rho, double close) {
         this.type = type;
         this.quantity = quantity;
         this.active = true; //Open trade
@@ -31,10 +34,13 @@ public class Trade {
         this.strike = strike;
         this.previousUnderlying = previousUnderlying;
         this.expiry = expiry;
-        this.delta = 0;//delta;
-        this.gamma = 0;//gamma;
-        this.vega = 0;//vega;
-        this.theta = 0;//theta;
+        this.IV = IV;
+        this.delta = delta;
+        this.gamma = gamma;
+        this.vega = vega;
+        this.theta = theta;
+        this.rho = rho;
+        this.close = close;
     }
     //</editor-fold>
 
@@ -47,23 +53,23 @@ public class Trade {
 
     //<editor-fold desc="trades">
     //Buy orders to make when price drops by 0.5%
-    public static void buyDecreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry) {
+    public static void buyDecreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry, double callIV, double callDelta, double callGamma, double callVega, double callTheta, double callRho, double callClose, double putIV, double putDelta, double putGamma, double putVega, double putTheta, double putRho, double putClose) {
         double previousUnderlying = underlying * 1.005;
         int roundedUnderlying = roundUnderlying(previousUnderlying);
-        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 300, previousUnderlying, expiry));
-        sellList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry));
-        buyList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry));
-        sellList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry));
+        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 300, previousUnderlying, expiry, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+        sellList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+        buyList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
+        sellList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
     }
 
     //Buy orders to make when price increases by 0.5%
-    public static void buyIncreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry) {
+    public static void buyIncreaseTrade(ArrayList<Trade> buyList, ArrayList<Trade> sellList, LocalDateTime dateTime, double underlying, LocalDateTime expiry, double callIV, double callDelta, double callGamma, double callVega, double callTheta, double callRho, double callClose, double putIV, double putDelta, double putGamma, double putVega, double putTheta, double putRho, double putClose) {
         double previousUnderlying = underlying * 0.995;
         int roundedUnderlying = roundUnderlying(previousUnderlying);
-        sellList.add(new Trade("put", 1200, dateTime, roundedUnderlying - 300, previousUnderlying, expiry));
-        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry));
-        sellList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry));
-        buyList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry));
+        sellList.add(new Trade("put", 1200, dateTime, roundedUnderlying - 300, previousUnderlying, expiry, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+        buyList.add(new Trade("put", 1000, dateTime, roundedUnderlying - 200, previousUnderlying, expiry, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose));
+        sellList.add(new Trade("call", 1000, dateTime, roundedUnderlying + 100, previousUnderlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
+        buyList.add(new Trade("call", 1200, dateTime, roundedUnderlying + 200, previousUnderlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose));
     }
     //</editor-fold>
 
@@ -78,10 +84,13 @@ public class Trade {
                 ", strike=" + strike +
                 ", previousUnderlying=" + previousUnderlying +
                 ", expiry=" + expiry +
+                ", IV=" + IV +
                 ", delta=" + delta +
                 ", gamma=" + gamma +
                 ", vega=" + vega +
                 ", theta=" + theta +
+                ", rho=" + rho +
+                ", close=" + close +
                 '}';
     }
 }
