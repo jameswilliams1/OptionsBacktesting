@@ -1,6 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -74,10 +72,8 @@ public class Analysis {
      * Check if an order goes up or down more than 0.5% vs. reference and make trades if so.
      *
      * @param orders
-     * @param buyList
-     * @param sellList
      */
-    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> buyList, ArrayList<Trade> sellList) {
+    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList) {
         double ref = orders.get(0).getUnderlying(); //Initially use first underlying value present as comparison reference
         double decreaseRef = ref;
         double increaseRef = ref;
@@ -96,9 +92,10 @@ public class Analysis {
         double putTheta = 0;
         double putRho = 0;
         double putClose = 0;
-
         LocalDateTime expiry = expiryDateTime(orders.get(0).getExpiry()); //Initial expiry/ref change date
         LocalDateTime change = getUnderlyingChangeDate(expiry);
+
+
 
         for (int i = 0; i < orders.size(); i++) {
             String orderType = orders.get(i).getType();
@@ -123,6 +120,11 @@ public class Analysis {
                 putRho = orders.get(i).getRho();
                 callClose = orders.get(i).getClose();
             }
+
+
+
+
+
             // Update variables if an order is after change date
             if (orderDateTime.isEqual(change) || orderDateTime.isAfter(change)) {
                 ref = orders.get(i).getUnderlying();
@@ -139,12 +141,12 @@ public class Analysis {
 
             if (decreaseDifference <= -minChange) {
                 increaseRef = ref; //Reset increaseRef when price passes ref
-                Trade.buyDecreaseTrade(buyList, sellList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
+                Trade.buyDecreaseTrade(tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 decreaseRef = underlying;
             }
             if (increaseDifference >= minChange) {
                 decreaseRef = ref; //Reset decreaseRef when price passes ref
-                Trade.buyIncreaseTrade(buyList, sellList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
+                Trade.buyIncreaseTrade(tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
                 increaseRef = underlying;
             }
 

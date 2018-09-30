@@ -13,6 +13,7 @@ public class TradeMain {
         ArrayList<Order> orders = new ArrayList<>();
         ArrayList<Trade> buyList = new ArrayList<>();
         ArrayList<Trade> sellList = new ArrayList<>();
+        ArrayList<Trade> tradeList = new ArrayList<>();
 
 
         try {
@@ -28,10 +29,10 @@ public class TradeMain {
         orders.addAll(calls);
         orders.addAll(puts);
         Collections.sort(orders);
-        Analysis.getChanges(orders, buyList, sellList);
+        Analysis.getChanges(orders, tradeList);
 
-        for (int i = 0; i < buyList.size(); i++) {
-            System.out.println(buyList.get(i));
+        for (int i = 0; i < tradeList.size(); i++) {
+            System.out.println(tradeList.get(i));
         }
 
     }
