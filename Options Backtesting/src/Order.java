@@ -9,11 +9,10 @@ import java.util.Scanner;
 /*
  * Represents a call/put order from the market
  */
-public class Order {
+public class Order implements Comparable<Order>{
 
     //<editor-fold desc="variables">
-    private final LocalDate date;
-    private final LocalTime time;
+    private final LocalDateTime dateTime;
     private final int strike;
     private final double close;
     private final double underlying;
@@ -24,12 +23,12 @@ public class Order {
     private final double vega;
     private final double theta;
     private final double rho;
+    private final String type;
     //</editor-fold>
 
     //<editor-fold desc="constructor">
-    public Order(LocalDate date, LocalTime time, int strike, double close, double underlying, LocalDate expiry, double IV, double delta, double gamma, double vega, double theta, double rho) {
-        this.date = date;
-        this.time = time;
+    public Order(LocalDateTime dateTime, int strike, double close, double underlying, LocalDate expiry, double IV, double delta, double gamma, double vega, double theta, double rho, String type) {
+        this.dateTime = dateTime;
         this.strike = strike;
         this.close = close;
         this.underlying = underlying;
@@ -40,17 +39,15 @@ public class Order {
         this.vega = vega;
         this.theta = theta;
         this.rho = rho;
+        this.type = type;
     }
     //</editor-fold>
 
     //<editor-fold desc="getters">
-    public LocalDate getDate() {
-        return date;
+    public LocalDateTime getDateTime() {
+        return dateTime;
     }
 
-    public LocalTime getTime() {
-        return time;
-    }
 
     public int getStrike() {
         return strike;
@@ -96,9 +93,8 @@ public class Order {
     //<editor-fold desc="toString">
     @Override
     public String toString() {
-        return "Order{" +
-                "date=" + date +
-                ", time=" + time +
+        return type+"{" +
+                "date=" + dateTime +
                 ", strike=" + strike +
                 ", close=" + close +
                 ", underlying=" + underlying +
@@ -174,9 +170,13 @@ public class Order {
         } catch (DateTimeParseException e) { //Date in other format
             expiry = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("M-dd-yyyy"));
         }
+        LocalDateTime dateTime = LocalDateTime.of(date, time);
         // Creates Order from stored values in standard format
-        return new Order(date, time, strike, close, underlying, expiry, IV, delta, gamma, vega, theta, rho);
+        return new Order(dateTime, strike, close, underlying, expiry, IV, delta, gamma, vega, theta, rho, orderType);
     }
 
-
+    @Override
+    public int compareTo(Order o) {
+        return getDateTime().compareTo(o.getDateTime());
+    }
 }

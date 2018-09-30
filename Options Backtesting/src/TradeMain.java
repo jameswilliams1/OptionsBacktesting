@@ -1,6 +1,8 @@
 import java.io.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 public class TradeMain {
 
@@ -25,10 +27,8 @@ public class TradeMain {
         }
         orders.addAll(calls);
         orders.addAll(puts);
-        orders.sort();
-
-        System.out.println(calls);
-        System.out.println(puts);
+        Collections.sort(orders);
+        System.out.println(orders);
     }
 }
 
