@@ -1,7 +1,5 @@
 import java.io.*;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 
 public class TradeMain {
@@ -34,7 +32,6 @@ public class TradeMain {
             System.out.println(tradeList.get(i));
         }
 
+        System.out.println(tradeList.size());
     }
 }
-
-
