@@ -46,8 +46,7 @@ public class Trade {
     }
     //</editor-fold>
 
-
-    //<editor-fold desc="round">
+    //<editor-fold desc="roundUnderlying">
     public static int roundUnderlying(double number) { //Round to nearest 100 (round down for 11450 etc.)
         return new BigDecimal(number / 100).setScale(0, RoundingMode.HALF_DOWN).intValue() * 100;
     }
@@ -83,7 +82,7 @@ public class Trade {
     }
     //</editor-fold>
 
-
+    //<editor-fold desc="toString">
     @Override
     public String toString() {
         return "Trade{" +
@@ -104,7 +103,9 @@ public class Trade {
                 ", side='" + side + '\'' +
                 '}';
     }
+    //</editor-fold>
 
+    //<editor-fold desc="getters">
     public String getType() {
         return type;
     }
@@ -164,4 +165,5 @@ public class Trade {
     public String getSide() {
         return side;
     }
+    //</editor-fold>
 }

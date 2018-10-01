@@ -65,7 +65,7 @@ public class Analysis {
     }
     //</editor-fold>
 
-
+    //<editor-fold desc="getChanges">
     //Check if an order goes up or down more than 0.5% vs. reference and make trades if so.
     public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList, ArrayList<Trade> activeTrades) {
         double ref = orders.get(0).getUnderlying(); //Initially use first underlying value present as comparison reference
@@ -146,20 +146,17 @@ public class Analysis {
                     vegaCount += activeTrades.get(j).getVega();
                     thetaCount += activeTrades.get(j).getTheta();
                     rhoCount += activeTrades.get(j).getRho();
-                    if(activeTrades.get(j).getType().equals("put")){
-                        if(activeTrades.get(j).getSide().equals("buy")){
-                            profit += (putClose*activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose()*activeTrades.get(j).getQuantity());
+                    if (activeTrades.get(j).getType().equals("put")) {
+                        if (activeTrades.get(j).getSide().equals("buy")) {
+                            profit += (putClose * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
+                        } else if (activeTrades.get(j).getSide().equals("sell")) {
+                            profit += (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - putClose * activeTrades.get(j).getQuantity());
                         }
-                        else if(activeTrades.get(j).getSide().equals("sell")){
-                            profit += (activeTrades.get(j).getClose()*activeTrades.get(j).getQuantity() - putClose*activeTrades.get(j).getQuantity());
-                        }
-                    }
-                    else if (activeTrades.get(j).getType().equals("call")){
-                        if(activeTrades.get(j).getSide().equals("buy")){
-                            profit += (callClose*activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose()*activeTrades.get(j).getQuantity());
-                        }
-                        else if(activeTrades.get(j).getSide().equals("sell")){
-                            profit += (activeTrades.get(j).getClose()*activeTrades.get(j).getQuantity() - callClose*activeTrades.get(j).getQuantity());
+                    } else if (activeTrades.get(j).getType().equals("call")) {
+                        if (activeTrades.get(j).getSide().equals("buy")) {
+                            profit += (callClose * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
+                        } else if (activeTrades.get(j).getSide().equals("sell")) {
+                            profit += (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - callClose * activeTrades.get(j).getQuantity());
                         }
 
                     }
@@ -182,13 +179,13 @@ public class Analysis {
                             }
                             activeTrades.remove(j);
                             j = j - 1; //Account for removing an element
-                            double ratio = underlying/decreaseRef;
-                            double multiplier = (Math.round(ratio*2)/2)-0.5; //Nearest 0.5%
-                            decreaseRef = multiplier*ref;
+                            double ratio = underlying / decreaseRef;
+                            double multiplier = (Math.round(ratio * 2) / 2) - 0.5; //Nearest 0.5%
+                            decreaseRef = multiplier * ref;
 
                         }
                         //Exit criteria of trades made after underlying increase
-                        else if ((activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() >= underlying))  || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))){
+                        else if ((activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() >= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))) {
                             Trade thisTrade = activeTrades.get(j);
                             String oppSide = "";
                             if (thisTrade.getSide().equals("buy")) {
@@ -203,18 +200,18 @@ public class Analysis {
                             }
                             activeTrades.remove(j);
                             j = j - 1; //Account for removing an element
-                            double ratio = underlying/increaseRef;
-                            double multiplier = (Math.round(ratio*2)/2)+0.5; //Nearest 0.5%
-                            increaseRef = multiplier*ref;
+                            double ratio = underlying / increaseRef;
+                            double multiplier = (Math.round(ratio * 2) / 2) + 0.5; //Nearest 0.5%
+                            increaseRef = multiplier * ref;
                         }
                     }
                 }
-                IV = IVCount/activeTrades.size();
-                delta = deltaCount/activeTrades.size();
-                gamma = gammaCount/activeTrades.size();
-                vega = vegaCount/activeTrades.size();
-                theta = thetaCount/activeTrades.size();
-                rho = rhoCount/activeTrades.size();
+                IV = IVCount / activeTrades.size();
+                delta = deltaCount / activeTrades.size();
+                gamma = gammaCount / activeTrades.size();
+                vega = vegaCount / activeTrades.size();
+                theta = thetaCount / activeTrades.size();
+                rho = rhoCount / activeTrades.size();
 
             }
             //</editor-fold>
@@ -232,17 +229,18 @@ public class Analysis {
             if (decreaseDifference <= -minChange && ordersAllowed) {
                 increaseRef = ref; //Reset increaseRef when price passes ref
                 Trade.buyDecreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
-                double ratio = underlying/decreaseRef;
-                double multiplier = (Math.round(ratio*2)/2)-0.5; //Nearest 0.5%
-                decreaseRef = multiplier*ref;
+                double ratio = underlying / decreaseRef;
+                double multiplier = (Math.round(ratio * 2) / 2) - 0.5; //Nearest 0.5%
+                decreaseRef = multiplier * ref;
             }
             if (increaseDifference >= minChange && ordersAllowed) {
                 decreaseRef = ref; //Reset decreaseRef when price passes ref
                 Trade.buyIncreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
-                double ratio = underlying/increaseRef;
-                double multiplier = (Math.round(ratio*2)/2)+0.5; //Nearest 0.5%
-                increaseRef = multiplier*ref;
+                double ratio = underlying / increaseRef;
+                double multiplier = (Math.round(ratio * 2) / 2) + 0.5; //Nearest 0.5%
+                increaseRef = multiplier * ref;
             }
         }
     }
+    //</editor-fold>
 }
