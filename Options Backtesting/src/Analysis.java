@@ -25,7 +25,7 @@ public class Analysis {
                 System.out.println(line);
             }
             i++;
-            if (i > 5000) {
+            if (i > 10000) {
                 break;
             }
         }
@@ -123,6 +123,7 @@ public class Analysis {
                 callClose = orders.get(i).getClose();
             }
             //</editor-fold>
+
             //<editor-fold desc="exit orders">
             if (activeTrades.size() != 0 && ordersAllowed) {
                 for (int j = 0; j < activeTrades.size(); j++) {
@@ -143,7 +144,10 @@ public class Analysis {
                         }
                         activeTrades.remove(j);
                         j = j - 1; //Account for removing an element
-                        decreaseRef = underlying;
+                        double ratio = underlying/decreaseRef;
+                        double multiplier = (Math.round(ratio*2)/2)-0.5; //Nearest 0.5%
+                        decreaseRef = multiplier*ref;
+
                     }
                     //Exit criteria of trades made after underlying increase
                     else if (activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying() >= underlying) {
@@ -161,7 +165,9 @@ public class Analysis {
                         }
                         activeTrades.remove(j);
                         j = j - 1; //Account for removing an element
-                        increaseRef = underlying;
+                        double ratio = underlying/increaseRef;
+                        double multiplier = (Math.round(ratio*2)/2)+0.5; //Nearest 0.5%
+                        increaseRef = multiplier*ref;
                     }
                 }
             }
@@ -180,12 +186,16 @@ public class Analysis {
             if (decreaseDifference <= -minChange && ordersAllowed) {
                 increaseRef = ref; //Reset increaseRef when price passes ref
                 Trade.buyDecreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
-                decreaseRef = underlying;
+                double ratio = underlying/decreaseRef;
+                double multiplier = (Math.round(ratio*2)/2)-0.5; //Nearest 0.5%
+                decreaseRef = multiplier*ref;
             }
             if (increaseDifference >= minChange && ordersAllowed) {
                 decreaseRef = ref; //Reset decreaseRef when price passes ref
                 Trade.buyIncreaseTrade(activeTrades, tradeList, orderDateTime, underlying, expiry, callIV, callDelta, callGamma, callVega, callTheta, callRho, callClose, putIV, putDelta, putGamma, putVega, putTheta, putRho, putClose);
-                increaseRef = underlying;
+                double ratio = underlying/increaseRef;
+                double multiplier = (Math.round(ratio*2)/2)+0.5; //Nearest 0.5%
+                increaseRef = multiplier*ref;
             }
         }
     }
