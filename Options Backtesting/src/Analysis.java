@@ -167,7 +167,7 @@ public class Analysis {
 
                     if (ordersAllowed) {
                         //Exit criteria of trades made after underlying decrease
-                        if (!activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying() <= underlying) {
+                        if ((!activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() <= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))) {
                             Trade thisTrade = activeTrades.get(j);
                             String oppSide = "";
                             if (thisTrade.getSide().equals("buy")) {
@@ -188,7 +188,7 @@ public class Analysis {
 
                         }
                         //Exit criteria of trades made after underlying increase
-                        else if (activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying() >= underlying) {
+                        else if ((activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() >= underlying))  || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))){
                             Trade thisTrade = activeTrades.get(j);
                             String oppSide = "";
                             if (thisTrade.getSide().equals("buy")) {
