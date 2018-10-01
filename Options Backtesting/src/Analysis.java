@@ -143,6 +143,7 @@ public class Analysis {
                         }
                         activeTrades.remove(j);
                         j = j - 1; //Account for removing an element
+                        decreaseRef = underlying;
                     }
                     //Exit criteria of trades made after underlying increase
                     else if (activeTrades.get(j).isIncrease() && activeTrades.get(j).getPreviousUnderlying() >= underlying) {
@@ -160,6 +161,7 @@ public class Analysis {
                         }
                         activeTrades.remove(j);
                         j = j - 1; //Account for removing an element
+                        increaseRef = underlying;
                     }
                 }
             }
