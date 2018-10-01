@@ -67,7 +67,12 @@ public class Analysis {
 
     //<editor-fold desc="getChanges">
     //Check if an order goes up or down more than 0.5% vs. reference and make trades if so.
-    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList, ArrayList<Trade> activeTrades) {
+    public static void getChanges(ArrayList<Order> orders, ArrayList<Trade> tradeList, ArrayList<Trade> activeTrades, String dir) throws IOException {
+        File profitLogFile = new File(dir + "profit_log.csv");
+        FileWriter fw1 = new FileWriter(profitLogFile);
+        BufferedWriter bw1 = new BufferedWriter(fw1);
+        bw1.write("Time,MTM,IV,Delta,Gamma,Vega,Theta,Rho");
+        bw1.newLine();
         double ref = orders.get(0).getUnderlying(); //Initially use first underlying value present as comparison reference
         double decreaseRef = ref;
         double increaseRef = ref;
@@ -160,8 +165,6 @@ public class Analysis {
                         }
 
                     }
-
-
                     if (ordersAllowed) {
                         //Exit criteria of trades made after underlying decrease
                         if ((!activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() <= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))) {
@@ -212,7 +215,8 @@ public class Analysis {
                 vega = vegaCount / activeTrades.size();
                 theta = thetaCount / activeTrades.size();
                 rho = rhoCount / activeTrades.size();
-
+                bw1.write(orderDateTime + ","+ profit + ","+ IV + ","+ delta + ","+ gamma + ","+ vega + ","+ theta + ","+ rho);
+                bw1.newLine();
             }
             //</editor-fold>
             // Update variables if an order is after change date
@@ -241,6 +245,7 @@ public class Analysis {
                 increaseRef = multiplier * ref;
             }
         }
+        bw1.close();
     }
     //</editor-fold>
 }
