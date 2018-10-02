@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 public class TradeMain {
 
@@ -17,12 +18,14 @@ public class TradeMain {
         dir = System.getProperty("user.home") + "/Options_Backtest_Output/";
         File folder = new File(dir);
         folder.mkdir();
+        ArrayList<String> profitList = new ArrayList<>();
 
         //<editor-fold desc="inputFiles">
         System.out.println("Enter full filepath for call data:");
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             callData = br.readLine();
+            //callData = "C:\\Users\\User\\Downloads\\Options Data\\call.csv";
         } catch (IOException e) {
             System.out.println(e);
         }
@@ -30,6 +33,7 @@ public class TradeMain {
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
             putData = br.readLine();
+            //putData = "C:\\Users\\User\\Downloads\\Options Data\\put.csv";
         } catch (IOException e) {
             System.out.println(e);
         }
@@ -37,19 +41,18 @@ public class TradeMain {
 
 
         try {
-            calls = Analysis.ordersFromFile("C:\\Users\\User\\Downloads\\Options Data\\Call Data_CSV.csv", "call");
-            //calls = Analysis.ordersFromFile(callData, "call");
+            Analysis.ordersFromFile(callData, "call", orders);
         } catch (IOException e) { //Catch file not found errors
             System.out.println(e);
         }
         try {
-            puts = Analysis.ordersFromFile("C:\\Users\\User\\Downloads\\Options Data\\Put_Data_CSV.csv", "put");
-            //puts = Analysis.ordersFromFile(putData, "put");
+            Analysis.ordersFromFile(putData, "put", orders);
         } catch (IOException e) {
             System.out.println(e);
         }
         //</editor-fold>
 
+        Collections.sort(orders);
 
 
 
@@ -64,11 +67,11 @@ public class TradeMain {
                 File tradeLogFile = new File(dir + "trades.csv");
                 FileWriter fw = new FileWriter(tradeLogFile);
                 BufferedWriter bw = new BufferedWriter(fw);
-                bw.write("Time,Type,Side,Strike,Quantity,Expiry,Close,IV,Delta,Gamma,Vega,Theta,Rho");
+                bw.write("Enter Time,Enter Underlying,Type,Side,Strike,Quantity,Expiry,Enter Close,Exit Close,Exit Time,Exit Underlying,Profit,IV,Delta,Gamma,Vega,Theta,Rho");
                 bw.newLine();
                 for(int k = 0; k<tradeList.size(); k++){
                     Trade trade = tradeList.get(k);
-                    bw.write(trade.getDateTime() + "," + trade.getType() + "," + trade.getSide() + "," + trade.getStrike() + "," + trade.getQuantity() + "," + trade.getExpiry() + "," + trade.getClose() + "," + trade.getIV() + "," + trade.getDelta() + "," + trade.getGamma() + "," + trade.getVega() + "," + trade.getTheta() + "," + trade.getRho());
+                    bw.write(trade.getDateTime() + "," + trade.getPreviousUnderlying()/1.005 + "," + trade.getType() + "," + trade.getSide() + "," + trade.getStrike() + "," + trade.getQuantity() + "," + trade.getExpiry() + "," + trade.getClose() + "," + trade.getExitClose() + "," + trade.getExitTime() + "," + trade.getExitUnderlying() + "," + trade.getTradeProfit()  + "," +  trade.getIV() + "," + trade.getDelta() + "," + trade.getGamma() + "," + trade.getVega() + "," + trade.getTheta() + "," + trade.getRho());
                     bw.newLine();
                 }
                 bw.close();
@@ -79,7 +82,8 @@ public class TradeMain {
         else{
             System.out.println("There was a problem processing the order files, check the file paths and try again.");
         }
-
+        System.out.println("Backtesting complete.");
+        System.out.println("Output saved to " + dir);
 
     }
 }

@@ -1,6 +1,7 @@
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
@@ -47,6 +48,10 @@ public class Order implements Comparable<Order> {
 
     public LocalDateTime getDateTime() {
         return dateTime;
+    }
+    public long getSeconds() {
+        //convert datetime to long value for comparison
+        return dateTime.toEpochSecond(ZoneOffset.UTC);
     }
 
     public int getStrike() {
@@ -182,6 +187,8 @@ public class Order implements Comparable<Order> {
 
     @Override
     public int compareTo(Order o) {
-        return getDateTime().compareTo(o.getDateTime());
+
+        return this.getDateTime().compareTo(o.getDateTime());
+
     }
 }
