@@ -6,6 +6,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * Runs Analysis of profitability of strategy.
+ */
+
 public class Analysis {
 
     //<editor-fold desc="file">
