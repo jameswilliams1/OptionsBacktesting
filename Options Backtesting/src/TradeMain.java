@@ -69,6 +69,7 @@ public class TradeMain {
                 BufferedWriter bw = new BufferedWriter(fw);
                 bw.write("Enter Time,Enter Underlying,Type,Side,Strike,Quantity,Expiry,Enter Close,Exit Close,Exit Time,Exit Underlying,Profit,IV,Delta,Gamma,Vega,Theta,Rho");
                 bw.newLine();
+                tradeList.addAll(activeTrades);
                 for(int k = 0; k<tradeList.size(); k++){
                     Trade trade = tradeList.get(k);
                     bw.write(trade.getDateTime() + "," + trade.getPreviousUnderlying()/1.005 + "," + trade.getType() + "," + trade.getSide() + "," + trade.getStrike() + "," + trade.getQuantity() + "," + trade.getExpiry() + "," + trade.getClose() + "," + trade.getExitClose() + "," + trade.getExitTime() + "," + trade.getExitUnderlying() + "," + trade.getTradeProfit()  + "," +  trade.getIV() + "," + trade.getDelta() + "," + trade.getGamma() + "," + trade.getVega() + "," + trade.getTheta() + "," + trade.getRho());

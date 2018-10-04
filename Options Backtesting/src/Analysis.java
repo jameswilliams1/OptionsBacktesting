@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Analysis {
 
@@ -84,14 +85,16 @@ public class Analysis {
         double callVega = 0;
         double callTheta = 0;
         double callRho = 0;
-        double callClose = 0;
         double putIV = 0;
         double putDelta = 0;
         double putGamma = 0;
         double putVega = 0;
         double putTheta = 0;
         double putRho = 0;
-        double putClose = 0;
+
+        HashMap<Integer, Double> callClose = new HashMap<>();
+        HashMap<Integer, Double> putClose = new HashMap<>();
+
         LocalDateTime expiry = expiryDateTime(orders.get(0).getExpiry()); //Initial expiry/ref change date
         LocalDateTime change = getUnderlyingChangeDate(expiry);
         boolean ordersAllowed = false;
@@ -136,7 +139,7 @@ public class Analysis {
                 putVega = orders.get(i).getVega();
                 putTheta = orders.get(i).getTheta();
                 putRho = orders.get(i).getRho();
-                putClose = orders.get(i).getClose();
+                putClose.put(orders.get(i).getStrike(), orders.get(i).getClose());
             }
             if (orderType.equals("call")) {
                 callIV = orders.get(i).getIV();
@@ -145,7 +148,7 @@ public class Analysis {
                 callVega = orders.get(i).getVega();
                 callTheta = orders.get(i).getTheta();
                 putRho = orders.get(i).getRho();
-                callClose = orders.get(i).getClose();
+                callClose.put(orders.get(i).getStrike(), orders.get(i).getClose());
             }
             //</editor-fold>
 
@@ -161,20 +164,20 @@ public class Analysis {
                     double thisProfit = 0;
                     if (activeTrades.get(j).getType().equals("put")) {
                         if (activeTrades.get(j).getSide().equals("buy")) {
-                            thisProfit = (putClose * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
+                            thisProfit = (putClose.get(activeTrades.get(j).getStrike()) * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
                         } else if (activeTrades.get(j).getSide().equals("sell")) {
-                            thisProfit = (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - putClose * activeTrades.get(j).getQuantity());
+                            thisProfit = (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - putClose.get(activeTrades.get(j).getStrike()) * activeTrades.get(j).getQuantity());
                         }
                     } else if (activeTrades.get(j).getType().equals("call")) {
                         if (activeTrades.get(j).getSide().equals("buy")) {
-                            thisProfit = (callClose * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
+                            thisProfit = (callClose.get(activeTrades.get(j).getStrike()) * activeTrades.get(j).getQuantity() - activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity());
                         } else if (activeTrades.get(j).getSide().equals("sell")) {
-                            thisProfit = (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - callClose * activeTrades.get(j).getQuantity());
+                            thisProfit = (activeTrades.get(j).getClose() * activeTrades.get(j).getQuantity() - callClose.get(activeTrades.get(j).getStrike()) * activeTrades.get(j).getQuantity());
                         }
                     }
                     if (ordersAllowed) {
                         //Exit criteria of trades made after underlying decrease
-                        if ((!activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() <= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))) {
+                        if ((!activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() <= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(12)))) {
                             Trade thisTrade = activeTrades.get(j);
                             String oppSide = "";
                             if (thisTrade.getSide().equals("buy")) {
@@ -184,7 +187,7 @@ public class Analysis {
                             }
                             if (thisTrade.getType().equals("put")) {
                                 Trade removeTrade = new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), thisTrade.getDateTime(), thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), putIV, putDelta, putGamma, putVega, putTheta, putRho, thisTrade.getClose());
-                                removeTrade.setExitClose(putClose);
+                                removeTrade.setExitClose(putClose.get(activeTrades.get(j).getStrike()));
                                 removeTrade.setExitTime(orderDateTime);
                                 removeTrade.setExitUnderlying(underlying);
                                 removeTrade.setTradeProfit(thisProfit);
@@ -193,7 +196,7 @@ public class Analysis {
 
                             } else {
                                 Trade removeTrade = new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), thisTrade.getDateTime(), thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), callIV, callDelta, callGamma, callVega, callTheta, callRho, thisTrade.getClose());
-                                removeTrade.setExitClose(callClose);
+                                removeTrade.setExitClose(callClose.get(activeTrades.get(j).getStrike()));
                                 removeTrade.setExitTime(orderDateTime);
                                 removeTrade.setExitUnderlying(underlying);
                                 removeTrade.setTradeProfit(thisProfit);
@@ -208,7 +211,7 @@ public class Analysis {
 
                         }
                         //Exit criteria of trades made after underlying increase
-                        else if ((activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() >= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(2)))) {
+                        else if ((activeTrades.get(j).isIncrease() && (activeTrades.get(j).getPreviousUnderlying() >= underlying)) || (orderDateTime.isAfter(activeTrades.get(j).getExpiry().minusMinutes(12)))) {
                             Trade thisTrade = activeTrades.get(j);
                             String oppSide = "";
                             if (thisTrade.getSide().equals("buy")) {
@@ -218,7 +221,7 @@ public class Analysis {
                             }
                             if (thisTrade.getType().equals("put")) {
                                 Trade removeTrade = new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), thisTrade.getDateTime(), thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), putIV, putDelta, putGamma, putVega, putTheta, putRho, thisTrade.getClose());
-                                removeTrade.setExitClose(putClose);
+                                removeTrade.setExitClose(putClose.get(activeTrades.get(j).getStrike()));
                                 removeTrade.setExitTime(orderDateTime);
                                 removeTrade.setExitUnderlying(underlying);
                                 removeTrade.setTradeProfit(thisProfit);
@@ -226,7 +229,7 @@ public class Analysis {
                                 exitProfit += thisProfit;
                             } else {
                                 Trade removeTrade = new Trade(true, thisTrade.getType(), oppSide, thisTrade.getQuantity(), thisTrade.getDateTime(), thisTrade.getStrike(), thisTrade.getPreviousUnderlying(), thisTrade.getExpiry(), callIV, callDelta, callGamma, callVega, callTheta, callRho, thisTrade.getClose());
-                                removeTrade.setExitClose(callClose);
+                                removeTrade.setExitClose(callClose.get(activeTrades.get(j).getStrike()));
                                 removeTrade.setExitTime(orderDateTime);
                                 removeTrade.setExitUnderlying(underlying);
                                 removeTrade.setTradeProfit(thisProfit);
